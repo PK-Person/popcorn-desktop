@@ -103,6 +103,9 @@ Settings.trackers = {
     ]
 };
 
+// API Servers
+Settings.apiserver = '';
+
 // User interface
 Settings.language = '';
 Settings.translateSynopsis = true;
