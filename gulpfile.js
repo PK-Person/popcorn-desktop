@@ -3,7 +3,7 @@
 /********
  * setup *
  ********/
-const nwVersion = '0.33.4',
+const nwVersion = '0.35.0',
     availablePlatforms = ['linux32', 'linux64', 'win32', 'win64', 'osx64'],
     releasesDir = 'build',
     nwFlavor = 'sdk';
@@ -124,7 +124,6 @@ const nw = new nwBuilder({
     macIcns: './src/app/images/butter.icns',
     version: nwVersion,
     flavor: nwFlavor,
-    //downloadUrl: 'https://get.popcorntime.sh/repo/nw/',
     platforms: parsePlatforms()
 }).on('log', console.log);
 
@@ -318,14 +317,17 @@ gulp.task('downloadffmpeg', done => {
 });
 
 gulp.task('unzipffmpeg', () => {
+    let ffpath = '';
     if (parsePlatforms()[0] === 'osx64'){
       // Need to check Correct folder on every Nw.js Upgrade as long as we use nwjs Binary directly
-      var ffpath = './build/' + pkJson.name + '/' + parsePlatforms() + '/' + pkJson.name + '.app/Contents/Versions/69.0.3497.100';
+      ffpath = './build/' + pkJson.name + '/' + parsePlatforms() + '/' + pkJson.name + '.app/Contents/Versions/69.0.3497.100';
     } else {
-      var ffpath = './build/' + pkJson.name + '/' + parsePlatforms();
+      ffpath = './build/' + pkJson.name + '/' + parsePlatforms();
     }
-    if (parsePlatforms()[0].indexOf('win') === -1)
+    if (parsePlatforms()[0].indexOf('win') === -1) {
         ffpath = ffpath + '/lib';
+    }
+
     return gulp.src('./cache/ffmpeg/*.{tar,tar.bz2,tar.gz,zip}')
         .pipe(decompress({ strip: 1 }))
         .pipe(gulp.dest(ffpath))
@@ -338,15 +340,17 @@ gulp.task('unzipffmpeg', () => {
 
 // development purpose
 gulp.task('unzipffmpegcache', () => {
+  let platform = '', bin = '';
   if (parsePlatforms()[0] === 'osx64'){
     // Need to check Correct folder on every Nw.js Upgrade as long as we use nwjs Binary directly
-    var platform = parsePlatforms()[0];
-    var bin = path.join('cache', nwVersion + '-' + nwFlavor, platform, pkJson.name + '.app/Contents/Versions/69.0.3497.100' );
+    platform = parsePlatforms()[0];
+    bin = path.join('cache', nwVersion + '-' + nwFlavor, platform, pkJson.name + '.app/Contents/Versions/69.0.3497.100' );
   } else {
-    var platform = parsePlatforms()[0];
-    var bin = path.join('cache', nwVersion + '-' + nwFlavor, platform);
-    if (platform.indexOf('win') === -1)
+    platform = parsePlatforms()[0];
+    bin = path.join('cache', nwVersion + '-' + nwFlavor, platform);
+    if (platform.indexOf('win') === -1) {
         bin = bin + '/lib';
+    }
   }
     return gulp.src('./cache/ffmpeg/*.{tar,tar.bz2,tar.gz,zip}')
         .pipe(decompress({ strip: 1 }))

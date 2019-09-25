@@ -33,7 +33,6 @@
     "position": "center"
   },
   "dependencies": {
-    "torrentcollection2": "0.0.3",
     "adm-zip": "0.4.13",
     "airplayer": "2.0.0",
     "async": "2.6.1",
@@ -79,11 +78,12 @@
     "subsrt": "^1.0.0",
     "tar": "4.4.8",
     "temp": "0.x.x",
+    "torrentcollection2": "0.0.3",
     "trakt.tv": "7.x.x",
     "trakt.tv-images": "5.x.x",
     "trakt.tv-matcher": "7.x.x",
     "trakt.tv-ondeck": "7.x.x",
-    "underscore": ">=1.x.x",
+    "underscore": "^1.8.3",
     "urijs": "1.19.1",
     "video.js": "7.3.x",
     "videojs-youtube": "2.6.0",
