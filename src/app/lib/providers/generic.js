@@ -69,10 +69,6 @@
         }
 
         win.info('Spawning new provider', name, config);
-        if (Settings.apiserver && config.apiURL) {
-          config.apiURL = Settings.apiserver;
-        }
-
         var p = cache[name] = new provider(config);
 
         //HACK(xaiki): set the provider name in the returned object.
