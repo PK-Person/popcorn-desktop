@@ -81,9 +81,10 @@ videojs.registerPlugin('customSubtitles', function () {
           }
       });
 
+      let track = null;
+      let player_ = this.player_;
       var TextTrackMenuItem = videojs.getComponent('TextTrackMenuItem');
       var CustomTrackMenuItem = videojs.extend(TextTrackMenuItem, {
-
           /*@ Constructor */
           constructor: function (player, options) {
               options = options || {};
@@ -104,9 +105,8 @@ videojs.registerPlugin('customSubtitles', function () {
                   }
               };
 
-              this.fileInput_ = $('<input type="file" accept=".vtt" style="display: none;">');
+              this.fileInput_ = $('<input type="file" accept=".vtt, .srt" style="display: none;">');
               $(this.el()).append(this.fileInput_);
-
               var that = this;
 
               App.vent.on('videojs:drop_sub', function () {
@@ -130,31 +130,31 @@ videojs.registerPlugin('customSubtitles', function () {
       });
 
       CustomTrackMenuItem.prototype.onClick = function () {
-          console.log(this);
           this.player_.pause();
           this.fileInput_.trigger('click'); // redirect to fileInput click
       };
 
+      CustomTrackMenuItem.prototype.handleClick = function (event) {
+        this.player_.pause();
+        this.fileInput_.trigger('click'); // redirect to fileInput click
+      }
+
       CustomTrackMenuItem.prototype.loadSubtitle = function (filePath) {
-
-          //clean tracks
-          var tracks = this.player_.textTracks() || [];
-          for (var i = 0; i < tracks.length; ++i) {
-              if (tracks[i].id_.indexOf('vjs_subtitles_00') !== -1) {
-                  $(tracks[i].el()).remove();
-                  tracks.splice(i, 1);
-                  break;
-              }
-          }
-
-          this.track = this.player_.addTextTrack('subtitles', i18n.__('Custom...'), '00', {
-              src: filePath
-          });
-          TextTrackMenuItem.prototype.onClick.call(this); // redirect to TextTrackMenuItem.onClick
+        App.SubtitlesServer.start({
+            vtt: filePath,
+            srt: filePath,
+            encoding: 'utf8'
+        });
+        track ? player_.removeRemoteTextTrack(track) : '';
+        track = player_.addRemoteTextTrack({
+          mode: 'showing',
+          kind: 'subtitles',
+          label : 'Custom',
+          src: 'http://127.0.0.1:9999/subtitle.vtt'
+        });
       };
 
       videojs.registerComponent('CustomTrackMenuItem', CustomTrackMenuItem);
-
       subtitlesButton.menu.addItem(new CustomTrackMenuItem(this));
       subtitlesButton.show(); // Always show subtitles button
     });
