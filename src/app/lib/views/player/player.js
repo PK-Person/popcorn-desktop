@@ -183,7 +183,8 @@
         },
 
         onPlayerEnded: function () {
-            if (this.model.get('auto_play')) {
+            var torrentModel = this.model.get('torrentModel');
+            if (torrentModel.get('auto_play')) {
                 this.playNextNow();
             } else {
                 this.closePlayer();
@@ -238,7 +239,8 @@
                 } catch (e) {}
             }
 
-            if (this.model.get('auto_play')) {
+            var torrentModel = this.model.get('torrentModel');
+            if (torrentModel.get('auto_play')) {
                 if (this.isMovie() === 'episode' && this.next_episode_model) {
                     // autoplay player div
                     var matcher = this.next_episode_model.get('title').split(/\s-\s/i);
@@ -248,7 +250,7 @@
                     $('.playing_next_number').text(i18n.__('Season %s', this.next_episode_model.get('season')) + ', ' + i18n.__('Episode %s', this.next_episode_model.get('episode')));
                 }
 
-                this._AutoPlayCheckTimer = setInterval(this.checkAutoPlay, 10 * 100 * 1); // every 1 sec
+                this._AutoPlayCheckTimer = setInterval(this.checkAutoPlay.bind(this), 10 * 100 * 1); // every 1 sec
             }
         },
 
@@ -301,7 +303,8 @@
             // Trigger a resize so the subtitles are adjusted
             $(window).trigger('resize');
             if (this.wasSeek) {
-                if (this.model.get('auto_play')) {
+                var torrentModel = this.model.get('torrentModel');
+                if (torrentModel.get('auto_play')) {
                     this.checkAutoPlay();
                 }
                 this.wasSeek = false;
@@ -373,8 +376,8 @@
             $('.filter-bar').show();
             $('#player_drag').show();
             var that = this;
-
-            if (this.model.get('auto_play')) {
+            var torrentModel = this.model.get('torrentModel');
+            if (torrentModel.get('auto_play')) {
 
                 this.precachestarted = false;
                 this.autoplayisshown = false;
@@ -529,18 +532,19 @@
             $('.playing_next').hide();
             $('.playing_next #nextCountdown').text('');
             this.autoplayisshown ? false : true;
-
+            var torrentModel = this.model.get('torrentModel');
+            torrentModel.set('auto_play', false);
             this.model.set('auto_play', false);
         },
         processNext: function () {
-            var episodes = this.model.get('episodes');
+            var torrentModel = this.model.get('torrentModel');
+            var episodes = torrentModel.get('episodes');
 
-            if (this.model.get('auto_id') !== episodes[episodes.length - 1]) {
-
-                var auto_play_data = this.model.get('auto_play_data');
-                var current_quality = this.model.get('quality');
-                var tvdb = this.model.get('tvdb_id');
-                var auto_id = this.model.get('auto_id');
+            if (torrentModel.get('auto_id') !== episodes[episodes.length - 1]) {
+                var auto_play_data = torrentModel.get('auto_play_data');
+                var current_quality = torrentModel.get('quality');
+                var tvdb = torrentModel.get('tvdb_id');
+                var auto_id = torrentModel.get('auto_id');
                 var idx;
 
                 _.find(auto_play_data, function (data, dataIdx) {
@@ -561,7 +565,7 @@
                 if (next_episode.torrents[current_quality] !== undefined && next_episode.torrents[current_quality].url) {
                     next_episode.torrent = next_episode.torrents[current_quality].url;
                 } else {
-                    next_episode.torrent = next_episode.torrents[next_episode.torrents.constructor.length - 1].url; //select highest quality available if user selected not found
+                    next_episode.torrent = next_episode.torrents[Object.keys(next_episode.torrents)[0]].url; //select highest quality available if user selected not found
                 }
 
                 this.next_episode_model = new Backbone.Model(next_episode);
