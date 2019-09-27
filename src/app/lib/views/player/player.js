@@ -1,10 +1,11 @@
 (function (App) {
     'use strict';
 
+    
     var dblclick_delay = 300,
         notif_displaytime = 3000;
 
-    var Player = Marionette.View.extend({
+        var Player = Marionette.View.extend({
         template: '#player-tpl',
         className: 'player',
         player: null,
@@ -36,7 +37,8 @@
             this.listenTo(torrentModel, 'change:uploadSpeed', this.updateUploadSpeed);
             this.listenTo(torrentModel, 'change:active_peers', this.updateActivePeers);
             this.listenTo(torrentModel, 'change:downloaded', this.updateDownloaded);
-
+            
+            
             this.inFullscreen = win.isFullscreen;
             this.playerWasReady = false;
 
@@ -48,8 +50,8 @@
         },
 
         isMovie: function () {
-            if (this.model.get('tvdb_id') === undefined) {
-                if (this.model.get('type') === 'video/youtube' || this.model.get('imdb_id') === undefined) {
+            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('tvdb_id') === undefined) {
+                if (this.model.get('torrentModel') && this.model.get('torrentModel').get('type') === 'video/youtube' || this.model.get('torrentModel').get('imdb_id') === undefined) {
                     return undefined;
                 } else {
                     return 'movie';
@@ -60,21 +62,21 @@
         },
 
         updateDownloadSpeed: function () {
-            this.ui.downloadSpeed.text(this.model.get('downloadSpeed'));
+            this.ui.downloadSpeed.text(this.model.get('torrentModel').get('downloadSpeed'));
         },
 
         updateUploadSpeed: function () {
-            this.ui.uploadSpeed.text(this.model.get('uploadSpeed'));
+            this.ui.uploadSpeed.text(this.model.get('torrentModel').get('uploadSpeed'));
         },
 
         updateActivePeers: function () {
-            this.ui.activePeers.text(this.model.get('active_peers'));
+            this.ui.activePeers.text(this.model.get('torrentModel').get('active_peers'));
         },
 
         updateDownloaded: function () {
-            if (this.model.get('downloadedPercent').toFixed(0) < 100) {
-                this.ui.downloaded.html(this.model.get('downloadedFormatted') + ' (' + this.model.get('downloadedPercent').toFixed(0) + '%)');
-                $('.vjs-load-progress').css('width', this.model.get('downloadedPercent').toFixed(0) + '%');
+            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('downloadedPercent').toFixed(0) < 100) {
+                this.ui.downloaded.html(this.model.get('torrentModel').get('downloadedFormatted') + ' (' + this.model.get('torrentModel').get('downloadedPercent').toFixed(0) + '%)');
+                $('.vjs-load-progress').css('width', this.model.get('torrentModel').get('downloadedPercent').toFixed(0) + '%');
                 this.remaining = true;
 
                 if (!this.createdRemaining) { //we create it
@@ -98,9 +100,9 @@
           this.player.addRemoteTextTrack(
               { mode: 'showing',
                 kind: 'subtitles',
-                label : App.Localization.langcodes[this.model.get('defaultSubtitle')].nativeName,
+                label : App.Localization.langcodes[this.model.get('torrentModel').get('defaultSubtitle')].nativeName,
                 src: 'http://127.0.0.1:9999/subtitle.vtt',
-                srclang: this.model.get('defaultSubtitle')
+                srclang: this.model.get('torrentModel').get('defaultSubtitle')
               });
 
 
@@ -116,8 +118,8 @@
                 if (real_elapsedTime >= player_elapsedTime && perc_elapsedTime >= 0.6) {
                     var upload = {
                         subpath: this.customSubtitles.subPath,
-                        path: this.model.get('videoFile'),
-                        imdbid: this.model.get('imdb_id')
+                        path: this.model.get('torrentModel').get('videoFile'),
+                        imdbid: this.model.get('torrentModel').get('imdb_id')
                     };
 
                     console.log('OpenSubtitles - Uploading subtitles', upload);
@@ -153,7 +155,7 @@
                 type = 'show';
             }
             if (this.player.currentTime() / this.player.duration() >= 0.8 && type !== undefined && this.model.get('metadataCheckRequired') !== false) {
-                App.vent.trigger(type + ':watched', this.model.attributes, 'database');
+                App.vent.trigger(type + ':watched', this.model.get('torrentModel').attributes, 'database');
             }
 
             // remember position
@@ -183,8 +185,7 @@
         },
 
         onPlayerEnded: function () {
-            var torrentModel = this.model.get('torrentModel');
-            if (torrentModel.get('auto_play')) {
+            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('auto_play')) {
                 this.playNextNow();
             } else {
                 this.closePlayer();
@@ -228,7 +229,7 @@
         },
 
         onPlayerFirstPlay: function () {
-            if (this.model.get('type') === 'video/youtube') {
+            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('type') === 'video/youtube') {
                 // XXX quality fix
                 $('.vjs-quality-button .vjs-menu-content').remove();
                 $('.vjs-quality-button').css('cursor', 'default');
@@ -239,12 +240,11 @@
                 } catch (e) {}
             }
 
-            var torrentModel = this.model.get('torrentModel');
-            if (torrentModel.get('auto_play')) {
+            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('auto_play')) {
                 if (this.isMovie() === 'episode' && this.next_episode_model) {
                     // autoplay player div
                     var matcher = this.next_episode_model.get('title').split(/\s-\s/i);
-                    $('.playing_next_poster').attr('src', this.model.get('poster'));
+                    $('.playing_next_poster').attr('src', this.model.get('torrentModel').get('poster'));
                     $('.playing_next_show').text(matcher[0]);
                     $('.playing_next_episode').text(matcher[2]);
                     $('.playing_next_number').text(i18n.__('Season %s', this.next_episode_model.get('season')) + ', ' + i18n.__('Episode %s', this.next_episode_model.get('episode')));
@@ -256,20 +256,20 @@
 
         onPlayerReady: function () {
             console.log('Player - data loaded in %sms', (Date.now() - this.playerWasReady));
-            if (this.model.get('subFile')){
+            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('subFile')){
     this.addTrack();
   }
             // set volume
             this.player.volume(Settings.playerVolume);
 
             // resume position
-            if (Settings.lastWatchedTitle === this.model.get('title') && Settings.lastWatchedTime > 0) {
+            if (Settings.lastWatchedTitle === this.model.get('torrentModel').get('title') && Settings.lastWatchedTime > 0) {
                 var position = Settings.lastWatchedTime;
                 console.info('Resuming position to %s secs', position.toFixed());
                 this.player.currentTime(position);
             } else if (Settings.traktPlayback) {
                 var type = this.isMovie();
-                var id = type === 'movie' ? this.model.get('imdb_id') : this.model.get('episode_id');
+                var id = type === 'movie' ? this.model.get('torrentModel').get('imdb_id') : this.model.get('torrentModel').get('episode_id');
                 App.Trakt.getPlayback(type, id).then(function (position_percent) {
                     var total = this.player.duration();
                     var position = (position_percent / 100) * total | 0;
@@ -303,14 +303,13 @@
             // Trigger a resize so the subtitles are adjusted
             $(window).trigger('resize');
             if (this.wasSeek) {
-                var torrentModel = this.model.get('torrentModel');
-                if (torrentModel.get('auto_play')) {
+                if (this.model.get('torrentModel') && this.model.get('torrentModel').get('auto_play')) {
                     this.checkAutoPlay();
                 }
                 this.wasSeek = false;
             } else {
                 if (this.firstPlay) {
-                    if (this.model.get('type') === 'video/youtube') {
+                    if (this.model.get('torrentModel') && this.model.get('torrentModel').get('type') === 'video/youtube') {
                         try {
                             document.getElementById('video_player_youtube_api')
                                 .contentWindow.document
@@ -342,7 +341,7 @@
         onPlayerError: function (error) {
             this.sendToTrakt('stop');
             // TODO: user errors
-            if (this.model.get('type') === 'video/youtube') {
+            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('type') === 'video/youtube') {
                 setTimeout(function () {
                     App.vent.trigger('player:close');
                 }, 2000);
@@ -351,15 +350,15 @@
         },
 
         metadataCheck: function () {
-            if (this.model.get('metadataCheckRequired')) {
-                var matcher = this.model.get('title').split(/\s-\s/i);
-                $('.verifmeta_poster').attr('src', this.model.get('poster'));
+            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('metadataCheckRequired')) {
+                var matcher = this.model.get('torrentModel').get('title').split(/\s-\s/i);
+                $('.verifmeta_poster').attr('src', this.model.get('torrentModel').get('poster'));
                 $('.verifmeta_show').html(matcher[0]);
-                if (this.model.get('episode')) {
+                if (this.model.get('torrentModel') && this.model.get('torrentModel').get('episode')) {
                     $('.verifmeta_episode').html(matcher[2]);
-                    $('.verifmeta_number').text(i18n.__('Season %s', this.model.get('season')) + ', ' + i18n.__('Episode %s', this.model.get('episode')));
+                    $('.verifmeta_number').text(i18n.__('Season %s', this.model.get('torrentModel').get('season')) + ', ' + i18n.__('Episode %s', this.model.get('torrentModel').get('episode')));
                 } else {
-                    $('.verifmeta_episode').text(this.model.get('year'));
+                    $('.verifmeta_episode').text(this.model.get('torrentModel').get('year'));
                 }
 
                 // display it
@@ -376,8 +375,8 @@
             $('.filter-bar').show();
             $('#player_drag').show();
             var that = this;
-            var torrentModel = this.model.get('torrentModel');
-            if (torrentModel.get('auto_play')) {
+
+            if (this.model.get('torrentModel') && this.model.get('torrentModel') && this.model.get('torrentModel').get('auto_play')) {
 
                 this.precachestarted = false;
                 this.autoplayisshown = false;
@@ -387,7 +386,7 @@
             }
 
             // start videojs engine
-            if (this.model.get('type') === 'video/youtube') {
+            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('type') === 'video/youtube') {
 
                 this.video = videojs('video_player', {
                     techOrder: ['youtube'],
@@ -464,8 +463,8 @@
             $('#video_player li:contains("subtitles off")').text(i18n.__('Disabled'));
             $('#video_player li:contains("local")').text(i18n.__('Local'));
 
-            if (this.model.get('defaultSubtitle') === 'local') {
-                App.vent.trigger('customSubtitles:added', this.model.get('subtitle').local);
+            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('defaultSubtitle') === 'local') {
+                App.vent.trigger('customSubtitles:added', this.model.get('torrentModel').get('subtitle').local);
             }
 
             // set fullscreen state & previous state
@@ -508,12 +507,12 @@
         },
 
         sendToTrakt: function (method) {
-            if (!this.player) {
+            if (!this.player || !this.model.get('torrentModel')) {
                 return;
             }
 
             var type = this.isMovie();
-            var id = type === 'movie' ? this.model.get('imdb_id') : this.model.get('episode_id');
+            var id = type === 'movie' ? this.model.get('torrentModel').get('imdb_id') : this.model.get('torrentModel').get('episode_id');
             var progress = this.player.currentTime() / this.player.duration() * 100 | 0;
             App.Trakt.scrobble(method, type, id, progress);
         },
@@ -532,19 +531,18 @@
             $('.playing_next').hide();
             $('.playing_next #nextCountdown').text('');
             this.autoplayisshown ? false : true;
-            var torrentModel = this.model.get('torrentModel');
-            torrentModel.set('auto_play', false);
-            this.model.set('auto_play', false);
+
+            this.model.get('torrentModel').set('auto_play', false);
         },
         processNext: function () {
-            var torrentModel = this.model.get('torrentModel');
-            var episodes = torrentModel.get('episodes');
+            var episodes = this.model.get('torrentModel').get('episodes');
 
-            if (torrentModel.get('auto_id') !== episodes[episodes.length - 1]) {
-                var auto_play_data = torrentModel.get('auto_play_data');
-                var current_quality = torrentModel.get('quality');
-                var tvdb = torrentModel.get('tvdb_id');
-                var auto_id = torrentModel.get('auto_id');
+            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('auto_id') !== episodes[episodes.length - 1]) {
+
+                var auto_play_data = this.model.get('torrentModel').get('auto_play_data');
+                var current_quality = this.model.get('torrentModel').get('quality');
+                var tvdb = this.model.get('torrentModel').get('tvdb_id');
+                var auto_id = this.model.get('torrentModel').get('auto_id');
                 var idx;
 
                 _.find(auto_play_data, function (data, dataIdx) {
@@ -573,7 +571,7 @@
         },
 
         remainingTime: function () {
-            var timeLeft = this.model.get('time_left');
+            var timeLeft = this.model.get('torrentModel').get('time_left');
 
             if (timeLeft === undefined) {
                 return i18n.__('Unknown time remaining');
@@ -597,23 +595,23 @@
             this.sendToTrakt('stop');
 
             // remove wrong metadata
-            var title = path.basename(this.model.get('src'));
-            this.model.set('imdb_id', false);
-            this.model.set('backdrop', false);
-            this.model.set('poster', false);
-            this.model.set('title', title);
-            this.model.set('season', false);
-            this.model.set('episode', false);
-            this.model.set('tvdb_id', false);
-            this.model.set('episode_id', false);
-            this.model.set('metadataCheckRequired', false);
+            var title = path.basename(this.model.get('torrentModel').get('src'));
+            this.model.get('torrentModel').set('imdb_id', false);
+            this.model.get('torrentModel').set('backdrop', false);
+            this.model.get('torrentModel').set('poster', false);
+            this.model.get('torrentModel').set('title', title);
+            this.model.get('torrentModel').set('season', false);
+            this.model.get('torrentModel').set('episode', false);
+            this.model.get('torrentModel').set('tvdb_id', false);
+            this.model.get('torrentModel').set('episode_id', false);
+            this.model.get('torrentModel').set('metadataCheckRequired', false);
             $('.player-title').text(title);
 
             // remove subtitles
-            var subs = this.model.get('subtitle');
+            var subs = this.model.get('torrentModel').get('subtitle');
             if (subs && subs.local) {
                 var tmpLoc = subs.local;
-                this.model.set('subtitle', {
+                this.model.get('torrentModel').set('subtitle', {
                     local: tmpLoc
                 });
             }
@@ -968,7 +966,7 @@
         },
 
         onBeforeDestroy: function () {
-            if (this.model.get('type') === 'video/youtube') {
+            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('type') === 'video/youtube') {
                 $('.trailer_mouse_catch').remove(); // Trailer UI Show FIX/HACK
             }
             $('#player_drag').hide();
