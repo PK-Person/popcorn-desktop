@@ -137,7 +137,7 @@ videojs.registerPlugin('customSubtitles', function () {
       CustomTrackMenuItem.prototype.handleClick = function (event) {
         this.player_.pause();
         this.fileInput_.trigger('click'); // redirect to fileInput click
-      }
+      };
 
       CustomTrackMenuItem.prototype.loadSubtitle = function (filePath) {
         App.SubtitlesServer.start({

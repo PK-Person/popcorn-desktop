@@ -34,3 +34,6 @@ lib-cov
 *.pid
 *.gz
 *.iml
+dist/private.pem
+
+dist/storage.json

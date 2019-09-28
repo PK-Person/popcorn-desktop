@@ -31,13 +31,7 @@ Unicode True
 ;    Architecture     ;
 ; ------------------- ;
 ;Default to detected platform build if not defined by -DARCH= argument
-!ifndef ARCH
-    !if /fileexists "..\..\build\${APP_NAME}\win64\*.*"
-        !define ARCH "win64"
-    !else
-        !define ARCH "win32"
-    !endif
-!endif
+!define ARCH "win64"
 
 ; ------------------- ;
 ;  OUTDIR (installer) ;

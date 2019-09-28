@@ -20,6 +20,7 @@ var
     // Compression
     tar = require('tar'),
     AdmZip = require('adm-zip'),
+    StreamZip = require('node-stream-zip'),
     zlib = require('zlib'),
 
     // Encoding/Decoding
@@ -48,3 +49,9 @@ var
 
     // NodeJS
     child = require('child_process');
+
+    // updater
+    WebkitUpdater = require('node-webkit-updater');
+    wUpdater = new WebkitUpdater('../../package.json');
+    createTorrent = require('create-torrent');
+    parseTorrent = require('parse-torrent');
