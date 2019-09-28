@@ -114,8 +114,8 @@
             });
 
             torrent.on('download', function (bytes) {
-              win.info('Download speed: ' + torrent.downloadSpeed)
-            })
+              win.info('Download speed: ' + torrent.downloadSpeed);
+            });
         });
 
         return defer.promise;
@@ -153,14 +153,11 @@
         var defer = Q.defer();
 
         pack.on('ready', () => {
-          pack.close();
-          return defer.resolve({ path: installDir, file: downloadPath, description: 'Reload to install.', title: `New Version ${updateData.version} Downloaded` });
-
           pack.extract(null, installDir, (err, count) => {
             win.error(err ? 'Extract error' : `Extracted ${count} entries`);
             pack.close();
             if (err) {
-              return defer.reject(err)
+              return defer.reject(err);
             }
 
             return defer.resolve({ path: installDir, file: downloadPath, description: 'Reload to install.', title: `New Version ${updateData.version} Downloaded` });
@@ -173,6 +170,7 @@
     function installPackage(downloadPath, outputDir, updateData) {
         win.debug('Extracting update...');
 
+        /* jshint ignore:start */
         var packageFile = path.join(outputDir, 'package.nw'),
             pack = new StreamZip({
               file: downloadPath,
@@ -180,6 +178,7 @@
             });
 
         return extractSimple(pack, updateData, downloadPath);
+        /* jshint ignore:end */
     }
 
     function installWindows(downloadPath, updateData) {
@@ -224,10 +223,6 @@
     Updater.prototype.displayNotification = function (data) {
         var self = this;
         var showRestart = false;
-        var buttons = [{
-            title: 'Changelog',
-            action: onChangelogClick
-        }];
 
         function onChangelogClick() {
             var $changelog = $('#changelog-container').html(_.template($('#changelog-tpl').html())(self.updateData));
@@ -238,16 +233,23 @@
         }
 
         function onRestartClick() {
+            /* jshint ignore:start */
             wUpdater.runInstaller(data.path, [wUpdater.getAppPath(), wUpdater.getAppExec(), data.file],{});
+            /* jshint ignore:end */
             nw.App.quit();
         }
 
-        if (data.title.indexOf('Downloaded') != -1) {
+        var buttons = [{
+            title: 'Changelog',
+            action: onChangelogClick
+        }];
+
+        if (data.title.indexOf('Downloaded') !== -1) {
           buttons.push({
               title: 'Reload',
               action: onRestartClick
-          })
-        } else if (data.title.indexOf('Installed') != -1) {
+          });
+        } else if (data.title.indexOf('Installed') !== -1) {
           showRestart = true;
         }
 
@@ -262,9 +264,8 @@
 
     Updater.prototype.update = function () {
         // Args passed when new app is launched from temp dir during update
-        var copyPath, execPath, newVersionZipFile;
+        var copyPath, execPath, newVersionZipFile, self = this;
         if (nw.App.argv.length) {
-            var self = this;
             var defer = Q.defer();
             var promise = defer.promise;
 
@@ -274,8 +275,8 @@
             newVersionZipFile = nw.App.argv[2];
 
             win.info(`CopyPath: ${copyPath} execPath: ${execPath}, update file: ${newVersionZipFile}`);
-            win.info(`Current Path: ${[wUpdater.getAppPath(), wUpdater.getAppExec()]}`);
             // Replace old app, Run updated app from original location and close temp instance
+            /* jshint ignore:start */
             var pack = new StreamZip({
               file: newVersionZipFile,
               storeEntries: true
@@ -286,7 +287,7 @@
                 win.error(err ? 'Extract error' : `Extracted ${count} entries`);
                 pack.close();
                 if (err) {
-                  return defer.reject(err)
+                  return defer.reject(err);
                 }
 
                 win.info(`Finish update and copy, restart`);
@@ -294,6 +295,7 @@
                 defer.resolve();
               });
             });
+            /* jshint ignore:end */
 
             return defer.promise;
         }
@@ -310,7 +312,6 @@
                 });
         } else {
             // Otherwise, check for updates then install if needed!
-            var self = this;
             return this.check().then(function (updateAvailable) {
                 if (updateAvailable) {
                     return self.download(self.updateData.updateUrl, outputFile)
@@ -318,7 +319,7 @@
                         .then(forcedBind(self.install, self))
                         .then(forcedBind(self.displayNotification, self))
                         .catch(function(err) {
-                          win.info(`Something went wrong downloading the update: ${err.message}`)
+                          win.info(`Something went wrong downloading the update: ${err.message}`);
                           alertMessageFailed(i18n.__('Something went wrong downloading the update'));
                         });
                 } else {

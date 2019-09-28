@@ -48,10 +48,10 @@ var
     torrentCollection = require('torrentcollection2'),
 
     // NodeJS
-    child = require('child_process');
+    child = require('child_process'),
 
     // updater
-    WebkitUpdater = require('node-webkit-updater');
-    wUpdater = new WebkitUpdater('../../package.json');
-    createTorrent = require('create-torrent');
+    WebkitUpdater = require('node-webkit-updater'),
+    wUpdater = new WebkitUpdater('../../package.json'),
+    createTorrent = require('create-torrent'),
     parseTorrent = require('parse-torrent');

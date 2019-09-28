@@ -31,7 +31,9 @@ const gulp = require('gulp'),
     createTorrent = require('create-torrent'),
     parseTorrent = require('parse-torrent'),
     crypto = require('crypto'),
+/* jshint ignore:start */
     { Storage } = require('@google-cloud/storage'),
+/* jshint ignore:end */
     pkJson = require('./package.json');
 
 const GOOGLE_CLOUD_PROJECT_ID = 'ziro-project';
@@ -627,12 +629,12 @@ gulp.task('update', done => {
                             sourceUrl: `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`,
                             checksum: checksum,
                             signature: base64Signature,
-                            title: pkJson.name + " v" + pkJson.version,
-                            description: "Please Download the last version from https://popcorn-api.io",
+                            title: pkJson.name + ' v' + pkJson.version,
+                            description: 'Please Download the last version from https://popcorn-api.io',
                             changeLog: [],
                             gitTag: pkJson.version,
-                            gitCommit: ""
-                          }
+                            gitCommit: ''
+                          };
                           break;
                       case 'linux64':
                           updatemagnet['linux']['x64'] = {
@@ -641,12 +643,12 @@ gulp.task('update', done => {
                             sourceUrl: `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`,
                             checksum: checksum,
                             signature: base64Signature,
-                            title: pkJson.name + " v" + pkJson.version,
-                            description: "Please Download the last version from https://popcorn-api.io",
+                            title: pkJson.name + ' v' + pkJson.version,
+                            description: 'Please Download the last version from https://popcorn-api.io',
                             changeLog: [],
                             gitTag: pkJson.version,
-                            gitCommit: ""
-                          }
+                            gitCommit: ''
+                          };
                           break;
                       case 'win32':
                           updatemagnet['windows']['x86'] = {
@@ -655,12 +657,12 @@ gulp.task('update', done => {
                             sourceUrl: `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`,
                             checksum: checksum,
                             signature: base64Signature,
-                            title: pkJson.name + " v" + pkJson.version,
-                            description: "Please Download the last version from https://popcorn-api.io",
+                            title: pkJson.name + ' v' + pkJson.version,
+                            description: 'Please Download the last version from https://popcorn-api.io',
                             changeLog: [],
                             gitTag: pkJson.version,
-                            gitCommit: ""
-                          }
+                            gitCommit: ''
+                          };
                           break;
                       case 'win64':
                           updatemagnet['windows']['x64'] = {
@@ -669,12 +671,12 @@ gulp.task('update', done => {
                             sourceUrl: `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`,
                             checksum: checksum,
                             signature: base64Signature,
-                            title: pkJson.name + " v" + pkJson.version,
-                            description: "Please Download the last version from https://popcorn-api.io",
+                            title: pkJson.name + ' v' + pkJson.version,
+                            description: 'Please Download the last version from https://popcorn-api.io',
                             changeLog: [],
                             gitTag: pkJson.version,
-                            gitCommit: ""
-                          }
+                            gitCommit: ''
+                          };
                           break;
                       case 'osx64':
                           updatemagnet['mac'] = {
@@ -683,12 +685,12 @@ gulp.task('update', done => {
                             sourceUrl: `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`,
                             checksum: checksum,
                             signature: base64Signature,
-                            title: pkJson.name + " v" + pkJson.version,
-                            description: "Please Download the last version from https://popcorn-api.io",
+                            title: pkJson.name + ' v' + pkJson.version,
+                            description: 'Please Download the last version from https://popcorn-api.io',
                             changeLog: [],
                             gitTag: pkJson.version,
-                            gitCommit: ""
-                          }
+                            gitCommit: ''
+                          };
                           break;
                       default:
                           break;
@@ -703,9 +705,9 @@ gulp.task('update', done => {
       fs.writeFileSync('build/updatemagnet.json', JSON.stringify(updatemagnet));
       done();
     }).catch(err => {
-      console.log(`Create update magnet failed: ${err.message}`)
+      console.log(`Create update magnet failed: ${err.message}`);
       done();
-    })
+    });
 });
 
 // prevent commiting if conditions aren't met and force beautify (bypass with `git commit -n`)
