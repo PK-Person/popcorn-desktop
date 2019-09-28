@@ -3,7 +3,7 @@
 /********
  * setup *
  ********/
-const nwVersion = '0.35.0',
+const nwVersion = '0.39.2',
     availablePlatforms = ['linux32', 'linux64', 'win32', 'win64', 'osx64'],
     releasesDir = 'build',
     nwFlavor = 'sdk';
@@ -28,8 +28,21 @@ const gulp = require('gulp'),
     path = require('path'),
     exec = require('child_process').exec,
     spawn = require('child_process').spawn,
+    createTorrent = require('create-torrent'),
+    parseTorrent = require('parse-torrent'),
+    crypto = require('crypto'),
+/* jshint ignore:start */
+    { Storage } = require('@google-cloud/storage'),
+/* jshint ignore:end */
     pkJson = require('./package.json');
 
+const GOOGLE_CLOUD_PROJECT_ID = 'ziro-project';
+const GOOGLE_CLOUD_KEYFILE = 'dist/storage.json';
+const BUCKET_NAME = 'ziro-project.appspot.com';
+const storage = new Storage({
+  projectId: GOOGLE_CLOUD_PROJECT_ID,
+  keyFilename: GOOGLE_CLOUD_KEYFILE,
+});
 
 /***********
  *  custom  *
@@ -219,10 +232,6 @@ gulp.task('jshint', () => {
 gulp.task('compresszip', () => {
 
     return Promise.all(nw.options.platforms.map((platform) => {
-      if (platform.match(/linux/) !== null) {
-          console.log('No `nocompresszip` task for', platform);
-          return null;
-      }
         return new Promise((resolve, reject) => {
             console.log('Packaging zip for: %s', platform);
             var sources = path.join('build', pkJson.name, platform);
@@ -415,10 +424,10 @@ gulp.task('nsis', () => {
             console.log('Packaging nsis for: %s', platform);
 
             // spawn isn't exec
-            const makensis = process.platform === 'win32' ? 'makensis.exe' : 'makensis';
+            const nsi = platform === 'win32' ? 'installer_makensis_win32.nsi' : 'installer_makensis_win64.nsi';
 
-            const child = spawn(makensis, [
-                './dist/windows/installer_makensis.nsi',
+            const child = spawn('makensis', [
+                './dist/windows/' + nsi,
                 '-DARCH=' + platform,
                 '-DOUTDIR=' + path.join(process.cwd(), releasesDir)
             ]);
@@ -490,6 +499,7 @@ gulp.task('deb', () => {
             child.on('close', (exitCode) => {
                 if (!exitCode) {
                     console.log('%s deb packaged in', platform, path.join(process.cwd(), releasesDir));
+                    console.log(debLogs.join('\n'));
                 } else {
                     if (debLogs.length) {
                         console.log(debLogs.join('\n'));
@@ -563,6 +573,143 @@ gulp.task('compress', () => {
     })).catch(log);
 });
 
+gulp.task('update', done => {
+    let private_key = fs.readFileSync('dist/private.pem', 'utf-8');
+    let public_key = fs.readFileSync('dist/public.pem', 'utf-8');
+    let updatemagnet = {
+      'windows': {},
+      'linux'  : {}
+    };
+
+    return Promise.all(nw.options.platforms.map((platform) => {
+        return new Promise((resolve, reject) => {
+            let source = path.join('build', pkJson.name + '-' + pkJson.version + '_' + platform + '.zip');
+
+            let checksumer = crypto.createHash('SHA1');
+            let signer = crypto.createSign('SHA1');
+            let verify = crypto.createVerify('SHA1');
+
+            console.log('Creating update info for: %s %s', platform, source);
+            var readStream = fs.createReadStream(source);
+            readStream.pipe(checksumer);
+            readStream.pipe(signer);
+            readStream.pipe(verify);
+            readStream.on('end', function () {
+                checksumer.end();
+                signer.end();
+
+                const signature = signer.sign(private_key);
+                const buff = Buffer.from(signature);
+                const base64Signature = buff.toString('base64');
+                const checksum = checksumer.read().toString('hex');
+                console.log('Signature: ' + base64Signature);
+                console.log('Is signature correctly: ', verify.verify(public_key, base64Signature, 'base64'));
+                console.log('Checksum: ', checksum);
+                createTorrent(source, (err, torrent) => {
+                  if (err) {
+                    console.log(`Create torrent for ${source} error: ${err.message}`);
+                    return reject(err);
+                  }
+
+                  let content = parseTorrent(torrent, 'hex');
+                  let magnet = parseTorrent.toMagnetURI(content);
+                  console.log('Magnet: ', magnet);
+                  const bucket = storage.bucket(BUCKET_NAME);
+                  const fileName = path.basename(source);
+                  const file = bucket.file(fileName);
+                  return bucket.upload(source, {})
+                    .then(() => file.makePublic())
+                    .then(() => {
+                      console.log(`Uploaded to storage.`);
+                      switch (platform) {
+                      case 'linux32':
+                          updatemagnet['linux']['x86'] = {
+                            version: pkJson.version,
+                            updateUrl: magnet,
+                            sourceUrl: `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`,
+                            checksum: checksum,
+                            signature: base64Signature,
+                            title: pkJson.name + ' v' + pkJson.version,
+                            description: 'Please Download the last version from https://popcorn-api.io',
+                            changeLog: [],
+                            gitTag: pkJson.version,
+                            gitCommit: ''
+                          };
+                          break;
+                      case 'linux64':
+                          updatemagnet['linux']['x64'] = {
+                            version: pkJson.version,
+                            updateUrl: magnet,
+                            sourceUrl: `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`,
+                            checksum: checksum,
+                            signature: base64Signature,
+                            title: pkJson.name + ' v' + pkJson.version,
+                            description: 'Please Download the last version from https://popcorn-api.io',
+                            changeLog: [],
+                            gitTag: pkJson.version,
+                            gitCommit: ''
+                          };
+                          break;
+                      case 'win32':
+                          updatemagnet['windows']['x86'] = {
+                            version: pkJson.version,
+                            updateUrl: magnet,
+                            sourceUrl: `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`,
+                            checksum: checksum,
+                            signature: base64Signature,
+                            title: pkJson.name + ' v' + pkJson.version,
+                            description: 'Please Download the last version from https://popcorn-api.io',
+                            changeLog: [],
+                            gitTag: pkJson.version,
+                            gitCommit: ''
+                          };
+                          break;
+                      case 'win64':
+                          updatemagnet['windows']['x64'] = {
+                            version: pkJson.version,
+                            updateUrl: magnet,
+                            sourceUrl: `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`,
+                            checksum: checksum,
+                            signature: base64Signature,
+                            title: pkJson.name + ' v' + pkJson.version,
+                            description: 'Please Download the last version from https://popcorn-api.io',
+                            changeLog: [],
+                            gitTag: pkJson.version,
+                            gitCommit: ''
+                          };
+                          break;
+                      case 'osx64':
+                          updatemagnet['mac'] = {
+                            version: pkJson.version,
+                            updateUrl: magnet,
+                            sourceUrl: `https://storage.googleapis.com/${BUCKET_NAME}/${fileName}`,
+                            checksum: checksum,
+                            signature: base64Signature,
+                            title: pkJson.name + ' v' + pkJson.version,
+                            description: 'Please Download the last version from https://popcorn-api.io',
+                            changeLog: [],
+                            gitTag: pkJson.version,
+                            gitCommit: ''
+                          };
+                          break;
+                      default:
+                          break;
+                      }
+
+                      return resolve();
+                    });
+                });
+            });
+        });
+    })).then(() => {
+      fs.writeFileSync('build/updatemagnet.json', JSON.stringify(updatemagnet));
+      done();
+    }).catch(err => {
+      console.log(`Create update magnet failed: ${err.message}`);
+      done();
+    });
+});
+
 // prevent commiting if conditions aren't met and force beautify (bypass with `git commit -n`)
 gulp.task('pre-commit', gulp.series('jshint', function(done) {
     // default task code here
@@ -577,7 +724,7 @@ gulp.task('build', gulp.series('injectgit', 'css', 'downloadffmpeg', 'nwjs', 'un
 }));
 
 // create redistribuable packages
-gulp.task('dist', gulp.series('build', 'compress','compresszip' , 'deb',  'nsis', function(done) {
+gulp.task('dist', gulp.series('build', 'compress', 'compresszip', 'deb', 'nsis', 'update', function(done) {
 
     // default task code here
     done();

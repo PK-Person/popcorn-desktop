@@ -1,29 +1,26 @@
 /** Default settings **/
 var Settings = {
     projectName: 'Popcorn-Time',
-    projectUrl: 'http://butterproject.org',
-    projectTwitter: 'butterproject',
-    projectFacebook: 'ButterProjectOrg',
-    projectGooglePlus: 'ButterProject',
-    projectBlog: 'http://blog.butterproject.org/',
+    projectUrl: 'https://popcorn-api.io',
+    projectTwitter: 'popcorntimeiotv',
+    projectFacebook: 'PopcornTimedotIo',
+    projectGooglePlus: 'PopcornTimedotIo',
+    projectBlog: 'https://blog.popcorn-api.io/',
     projectForum: 'https://www.reddit.com/r/ButterProject',
 
-    statusUrl: 'https://status.butterproject.org',
-    changelogUrl: 'https://github.com/butterproject/butter-desktop/commits/master',
-    issuesUrl: 'https://github.com/butterproject/butter-desktop/issues',
-    sourceUrl: 'https://github.com/butterproject/butter-desktop/',
-    commitUrl: 'https://github.com/butterproject/butter-desktop/commit',
+    statusUrl: 'https://status.popcorn-api.io',
+    changelogUrl: 'https://github.com/ziro-official/butter-desktop/commits/master',
+    issuesUrl: 'https://github.com/ziro-official/butter-desktop/issues',
+    sourceUrl: 'https://github.com/ziro-official/butter-desktop/',
+    commitUrl: 'https://github.com/ziro-official/butter-desktop/commit',
     updateKey: '-----BEGIN PUBLIC KEY-----\n' +
-        'MIIBtjCCASsGByqGSM44BAEwggEeAoGBAPNM5SX+yR8MJNrX9uCQIiy0t3IsyNHs\n' +
-        'HWA180wDDd3S+DzQgIzDXBqlYVmcovclX+1wafshVDw3xFTJGuKuva7JS3yKnjds\n' +
-        'NXbvM9CrJ2Jngfd0yQPmSh41qmJXHHSwZfPZBxQnspKjbcC5qypM5DqX9oDSJm2l\n' +
-        'fM/weiUGnIf7AhUAgokTdF7G0USfpkUUOaBOmzx2RRkCgYAyy5WJDESLoU8vHbQc\n' +
-        'rAMnPZrImUwjFD6Pa3CxhkZrulsAOUb/gmc7B0K9I6p+UlJoAvVPXOBMVG/MYeBJ\n' +
-        '19/BH5UNeI1sGT5/Kg2k2rHVpuqzcvlS/qctIENgCNMo49l3LrkHbJPXKJ6bf+T2\n' +
-        '8lFWRP2kVlrx/cHdqSi6aHoGTAOBhAACgYBTNeXBHbWDOxzSJcD6q4UDGTnHaHHP\n' +
-        'JgeCrPkH6GBa9azUsZ+3MA98b46yhWO2QuRwmFQwPiME+Brim3tHlSuXbL1e5qKf\n' +
-        'GOm3OxA3zKXG4cjy6TyEKajYlT45Q+tgt1L1HuGAJjWFRSA0PP9ctC6nH+2N3HmW\n' +
-        'RTcms0CPio56gg==\n' +
+        'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuAHq1Uz/dLblqMdmJALW\n' +
+        'VgHuUukx3pLnhFUp6Tm2jMCG7SvXnSp748rnON8T4+7Sg1gHjwBfnpVnZbdpOcGs\n' +
+        'Sjj9R5sb6A9FFzz3l0z3dm3pBRQkRavSsAnWapR90Lssp+frfKwWuv30Kde40ZlJ\n' +
+        'f+cMElbEZz7IFo1eLQucr83+KY2ndfG7OgWTLMwiOVEZnZSICq3pWsqoVQWdJ1yf\n' +
+        'oKc2Ax99BK63JtI3m82WCgke+0gN8w9fLFi+wJL9ppBu24V3wq1ChfvOzI4cAI2q\n' +
+        'VVAWCi44xV0bzTPtUnPPIPgc7+8G1VWHp2JYVmSLSmtpiHFb2bJSrwMijACNVBUr\n' +
+        'AwIDAQAB\n' +
         '-----END PUBLIC KEY-----\n',
     opensubtitles: {
         useragent: 'Butter'
@@ -192,13 +189,13 @@ Settings.totalDownloaded = 0;
 Settings.totalUploaded = 0;
 
 Settings.updateEndpoint = {
-    url: 'https://butterproject.org/',
+    url: 'https://popcorn-api.io/',
     index: 0,
     proxies: [{
-        url: 'https://butterproject.org/',
+        url: 'https://popcorn-api.io/',
         fingerprint: '',
     }, {
-        url: 'https://butterproject.github.io/',
+        url: 'https://ziro-official.github.io/',
         fingerprint: ''
     }]
 };
