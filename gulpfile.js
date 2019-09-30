@@ -313,8 +313,8 @@ gulp.task('nwjs', () => {
 
 // get ffmpeg lib
 gulp.task('downloadffmpeg', done => {
-    var parsed = ffmpegurl.substring(ffmpegurl.lastIndexOf('/'));
-        if(!fs.existsSync('./cache/ffmpeg/')){
+    let codecName = ffmpegurl.substring(ffmpegurl.lastIndexOf('/'));
+        if(!fs.existsSync('./cache/ffmpeg/' + codecName)){
             console.log('FFmpeg download starting....');
             return download(ffmpegurl).pipe(gulp.dest('./cache/ffmpeg/')).on('error', function (err) {
                 console.error(err);
@@ -336,8 +336,9 @@ gulp.task('unzipffmpeg', () => {
     if (parsePlatforms()[0].indexOf('win') === -1) {
         ffpath = ffpath + '/lib';
     }
+    let codecName = ffmpegurl.substring(ffmpegurl.lastIndexOf('/'));
 
-    return gulp.src('./cache/ffmpeg/*.{tar,tar.bz2,tar.gz,zip}')
+    return gulp.src('./cache/ffmpeg/' + codecName)
         .pipe(decompress({ strip: 1 }))
         .pipe(gulp.dest(ffpath))
         .on('error', function (err) {
@@ -349,19 +350,20 @@ gulp.task('unzipffmpeg', () => {
 
 // development purpose
 gulp.task('unzipffmpegcache', () => {
-  let platform = '', bin = '';
-  if (parsePlatforms()[0] === 'osx64'){
-    // Need to check Correct folder on every Nw.js Upgrade as long as we use nwjs Binary directly
-    platform = parsePlatforms()[0];
-    bin = path.join('cache', nwVersion + '-' + nwFlavor, platform, pkJson.name + '.app/Contents/Versions/69.0.3497.100' );
-  } else {
-    platform = parsePlatforms()[0];
-    bin = path.join('cache', nwVersion + '-' + nwFlavor, platform);
-    if (platform.indexOf('win') === -1) {
-        bin = bin + '/lib';
+    let platform = '', bin = '';
+    if (parsePlatforms()[0] === 'osx64'){
+        // Need to check Correct folder on every Nw.js Upgrade as long as we use nwjs Binary directly
+        platform = parsePlatforms()[0];
+        bin = path.join('cache', nwVersion + '-' + nwFlavor, platform, pkJson.name + '.app/Contents/Versions/69.0.3497.100' );
+    } else {
+        platform = parsePlatforms()[0];
+        bin = path.join('cache', nwVersion + '-' + nwFlavor, platform);
+        if (platform.indexOf('win') === -1) {
+            bin = bin + '/lib';
+        }
     }
-  }
-    return gulp.src('./cache/ffmpeg/*.{tar,tar.bz2,tar.gz,zip}')
+    let codecName = ffmpegurl.substring(ffmpegurl.lastIndexOf('/'));
+    return gulp.src('./cache/ffmpeg/' + codecName)
         .pipe(decompress({ strip: 1 }))
         .pipe(gulp.dest(bin))
         .on('error', function (err) {
