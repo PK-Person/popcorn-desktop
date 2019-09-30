@@ -74,9 +74,9 @@
         },
 
         updateDownloaded: function () {
-            if (this.model.get('torrentModel') && this.model.get('torrentModel').get('downloadedPercent').toFixed(0) < 100) {
-                this.ui.downloaded.html(this.model.get('torrentModel').get('downloadedFormatted') + ' (' + this.model.get('torrentModel').get('downloadedPercent').toFixed(0) + '%)');
-                $('.vjs-load-progress').css('width', this.model.get('torrentModel').get('downloadedPercent').toFixed(0) + '%');
+            if (this.model.get('downloadedPercent').toFixed(0) < 100) {
+                this.ui.downloaded.html(this.model.get('downloadedFormatted') + ' (' + this.model.get('downloadedPercent').toFixed(0) + '%)');
+                $('.vjs-load-progress').css('width', this.model.get('downloadedPercent').toFixed(0) + '%');
                 this.remaining = true;
 
                 if (!this.createdRemaining) { //we create it
@@ -154,8 +154,8 @@
             if (type === 'episode') {
                 type = 'show';
             }
-            if (this.player.currentTime() / this.player.duration() >= 0.8 && type !== undefined && this.model.get('metadataCheckRequired') !== false) {
-                App.vent.trigger(type + ':watched', this.model.get('torrentModel').attributes, 'database');
+            if (this.model.get('type')!=='video/youtube' &&(this.player.currentTime() / this.player.duration() >= 0.8 && type !== undefined && this.model.get('metadataCheckRequired') !== false)) {
+                App.vent.trigger(type + ':watched', this.model.attributes, 'database');
             }
 
             // remember position
