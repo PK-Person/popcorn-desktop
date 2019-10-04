@@ -53,8 +53,11 @@ Keep track of Popcorn Time development and community activity.
 * Join in discussions on the [Popcorn Time Forum](https://discuss.popcorntime.sh/).
 
 ## Screenshots
-![Popcorn Time](https://cloud.githubusercontent.com/assets/8317250/10714437/b1e1dc8c-7b32-11e5-9c25-d9fbd5b2f3bd.png)
-![Debugging Popcorn Time](https://cloud.githubusercontent.com/assets/8317250/10714430/add70234-7b32-11e5-9be7-1de539d865ba.png)
+## Screenshots
+![Popcorn Time Movies](https://user-images.githubusercontent.com/7203064/64246179-8a7ad480-cf36-11e9-80ce-27d2e4e5a99a.png)
+![Popcorn Time Animes](https://user-images.githubusercontent.com/7203064/64246128-6d460600-cf36-11e9-8fe8-3a77e6e5d781.png)
+![Popcorn Time Animes Detail](https://user-images.githubusercontent.com/7203064/64246246-aaaa9380-cf36-11e9-9e53-0248221c0e6c.png)
+
 
 
 ## Versioning
