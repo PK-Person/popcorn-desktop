@@ -45,6 +45,9 @@
         },
 
         setLang: function (value) {
+            if (value === undefined || this.values[value] === undefined) {
+                value = 'none';
+            }
             console.log(value);
             this.model.set('selected', value);
             this.ui.selected.removeClass().addClass('flag toggle selected-lang').addClass(value);

@@ -1,6 +1,7 @@
-(function (App){
+(function (App) {
     'use strict';
 
+    let subtitlesLoading;
     App.View.PlayControl = Marionette.View.extend({
         template: '#play-control-tpl',
         ui: {
@@ -24,15 +25,18 @@
         initialize: function () {
             this.views = {};
             var subtitleProvider = App.Config.getProviderForType('subtitle');
-            subtitleProvider.detail(this.model.get('imdb_id'), this.model.get('title'));
-            if (! this.model.get('langs')) {
-               this.model.set('langs', {en: undefined});
+            subtitlesLoading = subtitleProvider.detail(this.model.get('imdb_id'), this.model.get('title'));
+            if (!this.model.get('langs')) {
+                this.model.set('langs', { en: undefined });
             }
 
-            App.vent.on('sub:lang',   this.switchSubtitle.bind(this));
+            App.vent.on('sub:lang', this.switchSubtitle.bind(this));
             App.vent.on('audio:lang', this.switchAudio.bind(this));
-            App.vent.on('update:subtitles', function (subs)  {
+            App.vent.on('update:subtitles', function (subs) {
                 this.views.sub.updateLangs(subs);
+
+                this.views.sub.setLang(this.subtitle_selected === 'none' ? Settings.subtitle_language : this.subtitle_selected);
+
             }.bind(this));
 
             this.model.on('change:quality', function () {
@@ -67,7 +71,7 @@
             }
         },
 
-        hideUnused: function() {
+        hideUnused: function () {
             if (!this.model.get('torrents')) { // no torrents
                 $('#player-chooser, #audio-dropdown, #subs-dropdown').hide();
             }
@@ -80,9 +84,9 @@
         loadDropdown: function (type, attrs) {
             this.views[type] && this.views[type].destroy();
             this.views[type] = new App.View.LangDropdown({
-                model: new App.Model.Lang(Object.assign({type:type}, attrs))
+                model: new App.Model.Lang(Object.assign({ type: type }, attrs))
             });
-            var types = type+'Dropdown';
+            var types = type + 'Dropdown';
             this.getRegion(types).show(this.views[type]);
         },
 
@@ -103,7 +107,7 @@
             });
         },
 
-        loadComponents: function() {
+        loadComponents: function () {
             this.loadAudioDropdown();
             this.loadSubDropdown();
 
@@ -180,32 +184,48 @@
         },
 
         startStreaming: function () {
-            var providers = this.model.get('providers');
-            var quality = this.model.get('quality');
-            var defaultTorrent = this.model.get('torrents')[quality];
 
-            var filters =  {
-                quality: quality,
-                lang: this.audio_selected
-            };
-
-            var torrent = providers.torrent
-                .resolveStream(defaultTorrent, filters, this.model.attributes);
-
-            var torrentStart = new Backbone.Model({
-                imdb_id: this.model.get('imdb_id'),
-                torrent: torrent,
-                backdrop: this.model.get('backdrop'),
-                subtitle: this.model.get('subtitle'),
-                defaultSubtitle: this.subtitle_selected,
-                title: this.model.get('title'),
-                quality: quality,
-                lang: this.audio_selected,
-                type: 'movie',
-                device: App.Device.Collection.selected,
-                cover: this.model.get('cover')
+            let wrappingPromise = new Promise((resolve, reject) => {
+                var error = false;
+                subtitlesLoading.then(res => {
+                    resolve();
+                });
+                setTimeout(function () {
+                    resolve();
+                }, 3000);
+               
             });
-            App.vent.trigger('stream:start', torrentStart);
+
+            wrappingPromise.then(() => {
+                var providers = this.model.get('providers');
+                var quality = this.model.get('quality');
+                var defaultTorrent = this.model.get('torrents')[quality];
+
+                var filters = {
+                    quality: quality,
+                    lang: this.audio_selected
+                };
+
+                var torrent = providers.torrent
+                    .resolveStream(defaultTorrent, filters, this.model.attributes);
+
+                var torrentStart = new Backbone.Model({
+                    imdb_id: this.model.get('imdb_id'),
+                    torrent: torrent,
+                    backdrop: this.model.get('backdrop'),
+                    subtitle: this.model.get('subtitle'),
+                    defaultSubtitle: this.subtitle_selected,
+                    title: this.model.get('title'),
+                    quality: quality,
+                    lang: this.audio_selected,
+                    type: 'movie',
+                    device: App.Device.Collection.selected,
+                    cover: this.model.get('cover')
+                });
+                App.vent.trigger('stream:start', torrentStart);
+            });
+
+
         },
 
         playTrailer: function () {
