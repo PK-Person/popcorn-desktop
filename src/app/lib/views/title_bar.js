@@ -9,13 +9,22 @@
     };
 
     var TitleBar = Marionette.View.extend({
-        template: '#header-tpl',
+        getTemplate: function(){
+            if (process.platform === 'win32') {
+                return '#win-header-tpl';
+            } else {
+                return '#header-tpl';
+            }
+        },
 
         events: {
             'click .btn-os.os-max': 'maximize',
             'click .btn-os.os-min': 'minimize',
             'click .btn-os.os-close': 'closeWindow',
-            'click .btn-os.fullscreen': 'toggleFullscreen'
+            'click .btn-os.fullscreen': 'toggleFullscreen',
+            'click .window-minimize': 'minimize',
+            'click .window-maximize': 'maximize',
+            'click .window-close': 'closeWindow'
         },
 
         initialize: function () {
@@ -83,13 +92,8 @@
             this.nativeWindow.close();
         },
 
-        toggleFullscreen: function () {
-            win.toggleFullscreen();
-            if (this.nativeWindow.isFullscreen) {
-                $('.os-min, .os-max').css('display', 'none');
-            } else {
-                $('.os-min, .os-max').css('display', 'block');
-            }
+        toggleFullscreen: function () {            
+            this.nativeWindow.toggleFullscreen();            
             this.$el.find('.btn-os.fullscreen').toggleClass('active');
         },
 
