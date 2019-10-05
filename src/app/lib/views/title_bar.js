@@ -53,19 +53,20 @@
         },
 
         maximize: function () {
+
             if (this.nativeWindow.isFullscreen) {
                 this.nativeWindow.toggleFullscreen();
             } else {
-                if (window.screen.availHeight <= this.nativeWindow.height) {
-                    this.nativeWindow.restore();
-                    if (process.platform === 'win32') {
-                        $('.os-max').removeClass('os-is-max');
+                setTimeout(() => {
+                    if (this.nativeWindow.appWindow.isMaximized()) {
+                        this.nativeWindow.restore();
+                    } else {
+                        this.nativeWindow.maximize();
                     }
-                } else {
-                    this.nativeWindow.maximize();
-                    if (process.platform === 'win32') {
-                        $('.os-max').addClass('os-is-max');
-                    }
+                }, 0);
+                if (process.platform !== 'win32') {
+                    this.nativeWindow.resizeBy(1, 0);
+                    this.nativeWindow.resizeBy(-1, 0);
                 }
             }
         },
